@@ -1,0 +1,23 @@
+{
+    "name": "LLM Task Highlighter",
+    "version": "1.0",
+    "manifest_version": 3,
+    "description": "Highlights steps to perform tasks on AWS using an LLM",
+    "permissions": [
+      "activeTab",
+      "scripting",
+      "storage"
+    ],
+    "background": {
+      "service_worker": "background.js"
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["contentScript.js"]
+      }
+    ]
+  }
