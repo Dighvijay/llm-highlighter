@@ -8,6 +8,9 @@
       "scripting",
       "storage"
     ],
+    "host_permissions": [
+    "https://api.groq.com/*" 
+    ],
     "background": {
       "service_worker": "background.js"
     },
