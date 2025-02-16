@@ -1,13 +1,9 @@
-document.getElementById("btn-highlight").addEventListener("click", () => {
+document.getElementById("executeButton").addEventListener("click", () => {
+  const task = document.getElementById("taskInput").value;
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (!tabs.length) return;
-    const tabId = tabs[0].id;
-    chrome.tabs.sendMessage(tabId, { type: "TRIGGER_LLM_HIGHLIGHT" }, (response) => {
-      if (response && response.success) {
-        console.log("Highlight triggered.");
-      } else {
-        console.error("Failed to trigger highlight.");
-      }
-    });
+      chrome.tabs.sendMessage(tabs[0].id, { 
+          type: "TRIGGER_LLM_HIGHLIGHT",
+          task: task 
+      });
   });
 });
