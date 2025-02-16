@@ -1,26 +1,20 @@
 {
-    "name": "LLM Task Highlighter",
-    "version": "1.0",
-    "manifest_version": 3,
-    "description": "Highlights steps to perform tasks on AWS using an LLM",
-    "permissions": [
-      "activeTab",
-      "scripting",
-      "storage"
-    ],
-    "host_permissions": [
-    "https://api.groq.com/*" 
-    ],
-    "background": {
-      "service_worker": "background.js"
-    },
-    "action": {
-      "default_popup": "popup.html"
-    },
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["contentScript.js"]
-      }
-    ]
-  }
+  "manifest_version": 3,
+  "name": "LLM Assistant",
+  "version": "1.0",
+  "description": "Ask an LLM and get a response.",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "host_permissions": ["https://api-inference.huggingface.co/*"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"]
+    }
+  ]
+}

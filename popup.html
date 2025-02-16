@@ -1,10 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>LLM Highlighter</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Assistant</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 10px; width: 300px; }
+        input, button { width: 100%; padding: 8px; margin-top: 5px; }
+        #suggestions { background: #f9f9f9; padding: 5px; display: none; }
+        .suggestion-item { cursor: pointer; padding: 5px; }
+        .suggestion-item:hover { background: #ddd; }
+        #response { margin-top: 10px; padding: 5px; border: 1px solid #ddd; }
+    </style>
 </head>
 <body>
-  <button id="btn-highlight">Get Steps & Highlight</button>
-  <script src="popup.js"></script>
+    <h3>Ask LLM</h3>
+    <input type="text" id="prompt" placeholder="Type your question..." autocomplete="off">
+    <div id="suggestions"></div>
+    <button id="submit">Ask</button>
+    <div id="response"></div>
+    <script src="popup.js"></script>
 </body>
 </html>
