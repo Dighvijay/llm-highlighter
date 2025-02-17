@@ -1,56 +1,72 @@
 const GROQ_API_KEY = "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";
-
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 chrome.runtime.onInstalled.addListener(() => {
-    console.log("LLM Task Highlighter extension installed.");
+  console.log("LLM Task Highlighter extension installed.");
 });
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-    if (request.type === "FETCH_LLM_INSTRUCTIONS") {
-        const { payload } = request;
+  if (request.type === "FETCH_LLM_INSTRUCTIONS") {
+    const { payload } = request;
+    try {
+      console.log("Sending request to Groq API:", payload);
+      const response = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_API_KEY}`
+        },
+        body: JSON.stringify(payload)
+      });
 
-        try {
-            console.log("Sending request to Groq API:", payload);
-            
-            const response = await fetch(GROQ_API_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${GROQ_API_KEY}`
-                },
-                body: JSON.stringify(payload)
-            });
+      if (!response.ok) {
+        throw new Error(`Groq API error: ${response.status} ${response.statusText}`);
+      }
 
-            console.log("Groq API response received.");
+      // Get the raw text response and trim any extra whitespace.
+      const rawText = (await response.text()).trim();
+      console.log("Raw Groq API response:", rawText);
 
-            if (!response.ok) {
-                throw new Error(`Groq API error: ${response.status} ${response.statusText}`);
-            }
+      // Extract the candidate JSON block using a regular expression.
+      const jsonMatch = rawText.match(/{[\s\S]*}/);
+      if (!jsonMatch) {
+        throw new Error("No valid JSON block found in the response.");
+      }
+      const candidate = jsonMatch[0];
+      console.log("Candidate JSON:", candidate);
 
-            // Read the response body as JSON
-            const data = await response.json();
-            console.log("Parsed data:", data);
+      // Parse the candidate string. This should yield the full response object.
+      const data = JSON.parse(candidate);
 
-            const content = data.choices?.[0]?.message?.content;
-            if (!content) {
-                throw new Error("No content found in Groq response.");
-            }
+      // Extract the content field which contains the LLM answer.
+      let rawContent = data.choices?.[0]?.message?.content;
+      if (!rawContent) {
+        throw new Error("No content found in Groq response.");
+      }
+      console.log("Raw content from LLM:", rawContent);
 
-            let instructions;
-            try {
-                instructions = JSON.parse(content);
-                console.log("Parsed instructions:", instructions);
-            } catch (parseErr) {
-                throw new Error("Failed to parse LLM content as JSON:\n" + content);
-            }
+      // Remove Markdown code fences (```), if any, from the content.
+      const cleanedContent = rawContent
+        .trim()
+        .replace(/^```[\s\n]*/, "")
+        .replace(/[\s\n]*```$/, "")
+        .trim();
+      console.log("Cleaned content:", cleanedContent);
 
-            sendResponse({ success: true, data: instructions });
-        } catch (error) {
-            console.error("Groq LLM error:", error);
-            sendResponse({ success: false, error: error.message });
-        }
+      // Parse the cleaned content as JSON.
+      let instructions;
+      try {
+        instructions = JSON.parse(cleanedContent);
+        console.log("Parsed instructions:", instructions);
+      } catch (parseErr) {
+        throw new Error("Failed to parse LLM response as JSON:\n" + cleanedContent);
+      }
 
-        return true; // Keep the message port open for async response
+      sendResponse({ success: true, data: instructions });
+    } catch (error) {
+      console.error("Groq LLM error:", error);
+      sendResponse({ success: false, error: error.message });
     }
+    return true;
+  }
 });

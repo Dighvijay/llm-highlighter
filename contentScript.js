@@ -1,19 +1,22 @@
+// contentScript.js
+
+// Extract the snapshot of key DOM elements.
 function getKeyDOMSnapshot() {
-  // Get text content or attributes from key elements (this example extracts the innerText of elements with a specific class)
-  const snapshot = Array.from(document.querySelectorAll('.aws-button, .aws-navigation'))
-                        .map(el => ({ 
-                          tag: el.tagName, 
-                          text: el.innerText, 
-                          id: el.id,
-                          classes: el.className 
-                        }));
+  // Adjust the selector as needed to capture key buttons/navigation items.
+  const elements = document.querySelectorAll('.aws-button, .aws-navigation');
+  const snapshot = Array.from(elements).map(el => ({
+    tag: el.tagName,
+    text: el.innerText.trim(),
+    id: el.id,
+    classes: el.className
+  }));
   return snapshot;
 }
 
 function buildPromptForSteps(task) {
   const currentUrl = window.location.href;
   const pageTitle = document.title;
-  const snapshot = JSON.stringify(getKeyDOMSnapshot());
+  const snapshot = JSON.stringify(getKeyDOMSnapshot()); // Providing a JSON snapshot
 
   return [
     {
@@ -22,7 +25,8 @@ function buildPromptForSteps(task) {
     },
     {
       role: "user",
-      content: `On the AWS page with URL ${currentUrl} and title "${pageTitle}", given this snapshot of key DOM elements: ${snapshot}, explain how to ${task}. 
+      content: `On the AWS page with URL: ${currentUrl} and title: "${pageTitle}", given this DOM snapshot: ${snapshot},
+                explain how to ${task}. 
                 Return your answer as JSON with each step containing "instruction" and "selector". 
                 Example:
                 {
@@ -30,67 +34,38 @@ function buildPromptForSteps(task) {
                     {"instruction": "Click 'Launch Instance'", "selector": "#launchInstanceButton"}
                   ]
                 }
-                Do not include any text outside this JSON.`
+                Do not include any extra text.`
     }
   ];
 }
 
+function fetchInstructions(task) {
+  const payload = {
+    model: "llama-3.3-70b-versatile",
+    messages: buildPromptForSteps(task),
+    temperature: 0.7
+  };
 
-function highlightSteps(instructions) {
-  console.log("Received instructions:", instructions);
-  
-  if (!instructions || !instructions.steps) {
-      console.error("Invalid instructions format. Expected { steps: [...] }");
+  chrome.runtime.sendMessage({ type: "FETCH_LLM_INSTRUCTIONS", payload }, (response) => {
+    if (!response) {
+      console.error("No response from background script.");
       return;
-  }
-
-  instructions.steps.forEach((step, index) => {
-      console.log(`Step ${index + 1}:`);
-      console.log("Instruction:", step.instruction);
-      console.log("Selector:", step.selector);
-      console.log("------------------------");
+    }
+    if (response.success) {
+      // For debugging, print the instructions to the console.
+      console.log("LLM instructions received:", response.data);
+    } else {
+      console.error("LLM call failed:", response.error);
+      alert(`Failed to get instructions: ${response.error}`);
+    }
   });
 }
 
-
-function fetchInstructions() {
-  const payload = {
-      model: "llama-3.3-70b-versatile",
-      messages: buildPromptForSteps(),
-      temperature: 0.7
-  };
-
-  chrome.runtime.sendMessage(
-      { type: "FETCH_LLM_INSTRUCTIONS", payload },
-      (response) => {
-          if (!response) {
-              console.error("No response from background script.");
-              return;
-          }
-          if (response.success) {
-              console.log("Successfully received instructions:");
-              console.log(response.data);
-              highlightSteps(response.data);
-          } else {
-              console.error("LLM call failed:", response.error);
-              // You can also display this error to the user
-              alert(`Failed to get instructions: ${response.error}`);
-          }
-      }
-  );
-}
-
-
-// Listen for a message from the popup to trigger fetching instructions
+// Listen for a message from the popup to trigger instruction fetching.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === "TRIGGER_LLM_HIGHLIGHT") {
-      fetchInstructions(request.task);
-      sendResponse({ success: true });
+    // Use request.task passed from the popup.
+    fetchInstructions(request.task);
+    sendResponse({ success: true });
   }
 });
-
-function handleError(error) {
-  console.error("Error:", error);
-  // You can also display this to the user
-  alert(`An error occurred: ${error.message}`);
-}
