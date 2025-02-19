@@ -1,17 +1,19 @@
+const API_KEY = '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';
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "fetchFromOpenAI") {
+  if (message.action === "fetchFromModel") {
       fetch("https://api-inference.huggingface.co/models/google/gemma-2-2b-it", {
           method: "POST",
           headers: {
-              "Authorization": "Bearer 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",
+              "Authorization": "Bearer " + API_KEY,
               "Content-Type": "application/json"
           },
-          body: JSON.stringify({ inputs: message.prompt })  // Fix body format
+          body: JSON.stringify({ inputs: message.prompt })
       })
       .then(response => response.json())
       .then(data => {
           console.log("API Response:", data);
-          sendResponse({ response: data[0]?.generated_text || "No response." }); // Fix response handling
+          sendResponse({ response: data[0]?.generated_text || "No response." });
       })
       .catch(error => {
           console.error("API Error:", error);
