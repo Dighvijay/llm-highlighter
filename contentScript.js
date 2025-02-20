@@ -59,6 +59,12 @@ function fetchInstructions(task) {
   
     if (response.success) {
       console.log("LLM instructions received:", response.data);
+      // Send the response back to the popup.js
+      chrome.runtime.sendMessage({ 
+      type: "LLM_RESPONSE", 
+      data: response.data 
+      });
+
     } else {
       console.error("LLM call failed:", response.error);
       alert(`Failed to get instructions: ${response.error}`);

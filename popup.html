@@ -2,11 +2,71 @@
 <html>
 <head>
     <title>LLM Task Highlighter</title>
+    <!-- Add Chakra UI CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@chakra-ui/react@2.0.0/dist/chakra-ui.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 5px; 
+            background-color: #ffffff; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        .popup {
+            width: 400px; 
+            background-color: #ffffff; 
+            border: 2px solid #0077b6;  
+            border-radius: 12px; 
+            padding: 15px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .popup h3 {
+            font-size: 24px;
+            text-align: center;
+            color: #005f73;  
+            margin-bottom: 20px;
+        }
+
+        input, button, textarea { 
+            width: 90%; 
+            padding: 12px; 
+            margin-top: 10px; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            border: 2px solid #0077b6;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        #executeButton { 
+            display: block; 
+            margin: 0 auto; 
+            background-color: #0077b6; 
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease; 
+        }
+
+        #executeButton:hover { 
+            background-color: #005f73;  
+        }
+
+    </style>>
 </head>
 <body>
-    <input type="text" id="taskInput" placeholder="What do you want to do on AWS?">
-    <button id="executeButton">Execute</button>
-    <textarea id="responseTextarea" rows="10" cols="50" readonly></textarea>
+    <div class="popup">
+        <h3>What do you want to do on AWS?</h3>
+        <input type="text" id="taskInput" placeholder="Type your task..." autocomplete="on">
+        <button id="executeButton">Submit</button>
+        <textarea id="responseTextarea" rows="10" cols="50" readonly></textarea>
+    </div>
     <script src="popup.js"></script>
 </body>
 </html>

@@ -7,3 +7,18 @@ document.getElementById("executeButton").addEventListener("click", () => {
       });
   });
 });
+
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.type === "LLM_RESPONSE") {
+        console.log("Received response in popup:", request.data);
+        const responseTextarea = document.getElementById('responseTextarea');
+        if (responseTextarea) {
+            responseTextarea.value = JSON.stringify(request.data, null, 2);
+        } else {
+            console.error("Textarea not found in popup.");
+        }
+    }
+});
+
+
