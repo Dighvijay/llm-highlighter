@@ -47,18 +47,23 @@ function fetchInstructions(task) {
   };
 
   chrome.runtime.sendMessage({ type: "FETCH_LLM_INSTRUCTIONS", payload }, (response) => {
+    if (chrome.runtime.lastError) {
+      console.error("Error sending message:", chrome.runtime.lastError.message);
+      return;
+    }
+  
     if (!response) {
       console.error("No response from background script.");
       return;
     }
+  
     if (response.success) {
-      // For debugging, print the instructions to the console.
       console.log("LLM instructions received:", response.data);
     } else {
       console.error("LLM call failed:", response.error);
       alert(`Failed to get instructions: ${response.error}`);
     }
-  });
+  });  
 }
 
 // Listen for a message from the popup to trigger instruction fetching.
